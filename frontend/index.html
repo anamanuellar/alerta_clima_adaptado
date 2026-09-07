@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alerta de Clima</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- Orbes Iluminados de Fundo -->
+<div class="glow-bg glow-1"></div>
+<div class="glow-bg glow-2"></div>
+
+<div class="main-wrapper">
+  
+  <!-- LADO ESQUERDO: Painel de Dicas (Sempre 5 Dicas Sorteadas) -->
+  <aside class="side-panel left">
+    <h2 class="title-left">💡 Dicas do Dia</h2>
+    <div id="tipsContainer" style="display: flex; flex-direction: column; gap: 12px;">
+      <p style="font-size: 0.8rem; color: #64748b;">Carregando dicas...</p>
+    </div>
+  </aside>
+
+  <!-- CENTRO: Chat Principal -->
+  <main class="chat-container">
+    <div class="header">
+      <h1>🛡️ Alerta Clima Seguro</h1>
+      <p>Monitoramento meteorológico preventivo e comunicação inteligente com segurados.</p>
+    </div>
+
+    <div class="monitor-actions" aria-label="Ações de monitoramento preventivo">
+      <button type="button" id="runLiveMonitoring" class="monitor-btn live">🌐 Monitorar clima real</button>
+      <button type="button" id="runDemoMonitoring" class="monitor-btn demo">▶ Demonstrar fluxo completo</button>
+    </div>
+
+    <div class="messages" id="messages"></div>
+
+    <form class="input-container" id="weatherForm">
+      <input type="text" id="cityInput" placeholder="Digite o nome da cidade (ex: Rio de Janeiro)..." autocomplete="off" />
+      <button type="submit" class="send-btn">Enviar</button>
+    </form>
+  </main>
+
+  <!-- LADO DIREITO: Cidades Populares (Atalhos) -->
+  <aside class="side-panel right">
+    <h2 class="title-right">🏙️ Cidades Rápidas</h2>
+    <p style="font-size: 0.8rem; color: #94a3b8; margin-top: -10px;">Clique para consultar instantaneamente:</p>
+    
+    <div class="city-shortcuts" id="cityShortcuts">
+      <p style="font-size: 0.8rem; color: #64748b;">Carregando cidades...</p>
+    </div>
+  </aside>
+
+</div>
+
+<script src="js/script.js"></script>
+
+</body>
+</html>

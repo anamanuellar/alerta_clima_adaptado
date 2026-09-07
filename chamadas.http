@@ -1,0 +1,30 @@
+### PREVISAO DIÁRIA INMET
+GET https://apiprevmet.inmet.gov.br/avisos/ativos
+
+#### PREVISAO DIÁRIA
+GET https://api.openweathermap.org/data/2.5/weather?q=Rio de Janeiro&units=metric&appid={{OPENWEATHER_API_KEY}}&lang=pt_br
+
+### PREVISÃO PARA 5 DIAS A CADA 3 HORAS
+GET https://api.openweathermap.org/data/2.5/forecast?q=Rio de Janeiro&units=metric&appid={{OPENWEATHER_API_KEY}}&lang=pt_br
+
+###
+
+# 1
+POST http://localhost:8003/api/v1/city
+Content-Type: text/plain
+
+Rio de Janeiro
+
+# 2
+### REQUEST PARA BODY
+## 
+## Precisa ter espaço entre as palavras no body, não é case sensitive e nem precisa de acentos.
+GET http://localhost:8003/api/v1/current
+
+# 3
+### PREVISÃO PARA 5 DIAS API
+GET http://localhost:8003/api/v1/forecast
+
+# 4
+###
+POST http://localhost:8003/api/v1/monitoring/run?demonstracao=true

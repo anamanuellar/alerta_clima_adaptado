@@ -1,0 +1,62 @@
+[
+  {
+    "id": "SEG-001",
+    "nome": "Mariana Souza",
+    "cidade": "Salvador",
+    "latitude": -12.9714,
+    "longitude": -38.5014,
+    "tipo_seguro": "residencial",
+    "bem_segurado": "residência",
+    "canal": "WhatsApp"
+  },
+  {
+    "id": "SEG-002",
+    "nome": "Carlos Mendes",
+    "cidade": "Curitiba",
+    "latitude": -25.4284,
+    "longitude": -49.2733,
+    "tipo_seguro": "automovel",
+    "bem_segurado": "veículo",
+    "canal": "SMS"
+  },
+  {
+    "id": "SEG-003",
+    "nome": "Ana Oliveira",
+    "cidade": "São Paulo",
+    "latitude": -23.5505,
+    "longitude": -46.6333,
+    "tipo_seguro": "residencial",
+    "bem_segurado": "apartamento",
+    "canal": "E-mail"
+  },
+  {
+    "id": "SEG-004",
+    "nome": "Rafael Lima",
+    "cidade": "Rio de Janeiro",
+    "latitude": -22.9068,
+    "longitude": -43.1729,
+    "tipo_seguro": "automovel",
+    "bem_segurado": "veículo",
+    "canal": "Push"
+  },
+  {
+    "id": "SEG-005",
+    "nome": "Fazenda Boa Vista",
+    "cidade": "Goiânia",
+    "latitude": -16.6869,
+    "longitude": -49.2648,
+    "tipo_seguro": "rural",
+    "bem_segurado": "produção agrícola",
+    "canal": "E-mail"
+  },
+  {
+    "id": "SEG-006",
+    "nome": "Mercado Atlântico",
+    "cidade": "Recife",
+    "latitude": -8.0476,
+    "longitude": -34.877,
+    "tipo_seguro": "empresarial",
+    "bem_segurado": "estabelecimento comercial",
+    "canal": "WhatsApp"
+  }
+]

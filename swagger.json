@@ -1,0 +1,835 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Alerta de clima",
+    "description": "API de alerta de clima",
+    "version": "0.0.1"
+  },
+  "paths": {
+    "/api/v1/current": {
+      "get": {
+        "summary": "Obter informações atuais do clima",
+        "description": "Retorna a previsão meteorológica atual para a cidade informada.",
+        "operationId": "getCurrent_api_v1_current_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Current"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/forecast": {
+      "get": {
+        "summary": "Obter previsão de 7 dias do clima",
+        "description": "Retorna a previsão do tempo para os próximos 7 dias da cidade informada.",
+        "operationId": "getForecast_api_v1_forecast_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Forecast"
+                  },
+                  "type": "array",
+                  "title": "Response Getforecast Api V1 Forecast Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/city": {
+      "post": {
+        "summary": "Rota para obter a cidade",
+        "description": "Armazena a cidade informada na sessão do usuário para que as próximas interações da aplicação utilizem esse valor.",
+        "operationId": "setCity_api_v1_city_post",
+        "requestBody": {
+          "content": {
+            "text/plain": {
+              "schema": {
+                "type": "string",
+                "title": "City"
+              },
+              "example": "Rio de Janeiro"
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "title": "Response Setcity Api V1 City Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tips": {
+      "get": {
+        "summary": "Obtém dicas de clima",
+        "operationId": "getTips_api_v1_tips_get",
+        "responses": {
+          "200": {
+            "description": "3 dicas de clima para cada tipo de dica",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tips"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cities": {
+      "get": {
+        "summary": "Obtém cidades e suas siglas de estado",
+        "operationId": "getCities_api_v1_cities_get",
+        "responses": {
+          "200": {
+            "description": "Lista de cidades e seus atributos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/City"
+                  },
+                  "type": "array",
+                  "title": "Response Getcities Api V1 Cities Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/insureds": {
+      "get": {
+        "tags": [
+          "Monitoramento preventivo"
+        ],
+        "summary": "Listar os segurados fictícios usados pelo protótipo",
+        "operationId": "listar_segurados_api_v1_insureds_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Segurado"
+                  },
+                  "type": "array",
+                  "title": "Response Listar Segurados Api V1 Insureds Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/monitoring/run": {
+      "post": {
+        "tags": [
+          "Monitoramento preventivo"
+        ],
+        "summary": "Executar o fluxo preventivo completo",
+        "description": "Consulta a Open-Meteo, identifica eventos, aplica regras de negócio, seleciona segurados, gera mensagens personalizadas e simula o envio. Use demonstracao=true para apresentar o fluxo mesmo quando não houver risco na previsão real.",
+        "operationId": "executar_monitoramento_api_v1_monitoring_run_post",
+        "parameters": [
+          {
+            "name": "demonstracao",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Demonstracao"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultadoMonitoramento"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Rota para acessar a página HTML",
+        "description": "Rota para acessar a página HTML do frontend. Solicita a cidade ao usuário. O usuário informa a cidade, a aplicação executa a rota /api/v1/city e, em seguida, exibe o menu com as opções:\n\n1. Previsão atual — chama /api/v1/current e exibe a previsão atual. Ao final, carrega o menu com essas opções\n2. Previsão dos próximos 7 dias — chama /api/v1/forecast e mostra a previsão semanal. Ao final, carrega o menu com essas opções\n3. Trocar cidade — digita nova cidade e chama /api/v1/city. Ao final, carrega o menu com essas opções\n4. Sair — limpa o chat e recarrega a página para informar a cidade novamente.",
+        "operationId": "frontend__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Alert": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "Alert"
+      },
+      "City": {
+        "properties": {
+          "city": {
+            "type": "string",
+            "title": "City"
+          },
+          "badge": {
+            "type": "string",
+            "title": "Badge"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "city",
+          "badge",
+          "type"
+        ],
+        "title": "City"
+      },
+      "Current": {
+        "properties": {
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "weather_code": {
+            "type": "integer",
+            "title": "Weather Code"
+          },
+          "weather_icon": {
+            "type": "string",
+            "title": "Weather Icon"
+          },
+          "alert": {
+            "$ref": "#/components/schemas/Alert"
+          },
+          "temp_max": {
+            "type": "string",
+            "title": "Temp Max"
+          },
+          "temp_min": {
+            "type": "string",
+            "title": "Temp Min"
+          },
+          "sunrise": {
+            "type": "string",
+            "title": "Sunrise"
+          },
+          "sunset": {
+            "type": "string",
+            "title": "Sunset"
+          },
+          "precip_prob": {
+            "type": "string",
+            "title": "Precip Prob"
+          },
+          "precip": {
+            "type": "string",
+            "title": "Precip"
+          },
+          "wind_gusts": {
+            "type": "string",
+            "title": "Wind Gusts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "description",
+          "weather_code",
+          "weather_icon",
+          "alert",
+          "temp_max",
+          "temp_min",
+          "sunrise",
+          "sunset",
+          "precip_prob",
+          "precip",
+          "wind_gusts"
+        ],
+        "title": "Current"
+      },
+      "EventoClimatico": {
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "chuva_intensa",
+              "granizo",
+              "vento_forte",
+              "nevoeiro",
+              "tempestade"
+            ],
+            "title": "Tipo"
+          },
+          "titulo": {
+            "type": "string",
+            "title": "Titulo"
+          },
+          "cidade": {
+            "type": "string",
+            "title": "Cidade"
+          },
+          "data": {
+            "type": "string",
+            "title": "Data"
+          },
+          "severidade": {
+            "type": "string",
+            "enum": [
+              "moderada",
+              "alta",
+              "extrema"
+            ],
+            "title": "Severidade"
+          },
+          "descricao": {
+            "type": "string",
+            "title": "Descricao"
+          },
+          "weather_code": {
+            "type": "integer",
+            "title": "Weather Code"
+          },
+          "precipitacao_mm": {
+            "type": "number",
+            "title": "Precipitacao Mm"
+          },
+          "probabilidade_chuva": {
+            "type": "number",
+            "title": "Probabilidade Chuva"
+          },
+          "rajada_vento_kmh": {
+            "type": "number",
+            "title": "Rajada Vento Kmh"
+          },
+          "origem": {
+            "type": "string",
+            "enum": [
+              "Open-Meteo",
+              "Cenário demonstrativo"
+            ],
+            "title": "Origem"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tipo",
+          "titulo",
+          "cidade",
+          "data",
+          "severidade",
+          "descricao",
+          "weather_code",
+          "precipitacao_mm",
+          "probabilidade_chuva",
+          "rajada_vento_kmh",
+          "origem"
+        ],
+        "title": "EventoClimatico"
+      },
+      "Forecast": {
+        "properties": {
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "weather_code": {
+            "type": "integer",
+            "title": "Weather Code"
+          },
+          "weather_icon": {
+            "type": "string",
+            "title": "Weather Icon"
+          },
+          "alert": {
+            "$ref": "#/components/schemas/Alert"
+          },
+          "temp_max": {
+            "type": "string",
+            "title": "Temp Max"
+          },
+          "temp_min": {
+            "type": "string",
+            "title": "Temp Min"
+          },
+          "sunrise": {
+            "type": "string",
+            "title": "Sunrise"
+          },
+          "sunset": {
+            "type": "string",
+            "title": "Sunset"
+          },
+          "precip_prob": {
+            "type": "string",
+            "title": "Precip Prob"
+          },
+          "precip": {
+            "type": "string",
+            "title": "Precip"
+          },
+          "wind_gusts": {
+            "type": "string",
+            "title": "Wind Gusts"
+          },
+          "date": {
+            "type": "string",
+            "title": "Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "description",
+          "weather_code",
+          "weather_icon",
+          "alert",
+          "temp_max",
+          "temp_min",
+          "sunrise",
+          "sunset",
+          "precip_prob",
+          "precip",
+          "wind_gusts",
+          "date"
+        ],
+        "title": "Forecast"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "NotificacaoSimulada": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "segurado_id": {
+            "type": "string",
+            "title": "Segurado Id"
+          },
+          "segurado": {
+            "type": "string",
+            "title": "Segurado"
+          },
+          "cidade": {
+            "type": "string",
+            "title": "Cidade"
+          },
+          "tipo_seguro": {
+            "type": "string",
+            "title": "Tipo Seguro"
+          },
+          "bem_segurado": {
+            "type": "string",
+            "title": "Bem Segurado"
+          },
+          "canal": {
+            "type": "string",
+            "title": "Canal"
+          },
+          "evento": {
+            "$ref": "#/components/schemas/EventoClimatico"
+          },
+          "mensagem": {
+            "type": "string",
+            "title": "Mensagem"
+          },
+          "gerada_por": {
+            "type": "string",
+            "enum": [
+              "IA",
+              "modelo de contingência"
+            ],
+            "title": "Gerada Por"
+          },
+          "status": {
+            "type": "string",
+            "const": "Envio simulado com sucesso",
+            "title": "Status",
+            "default": "Envio simulado com sucesso"
+          },
+          "processada_em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Processada Em"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "segurado_id",
+          "segurado",
+          "cidade",
+          "tipo_seguro",
+          "bem_segurado",
+          "canal",
+          "evento",
+          "mensagem",
+          "gerada_por",
+          "processada_em"
+        ],
+        "title": "NotificacaoSimulada"
+      },
+      "ResultadoMonitoramento": {
+        "properties": {
+          "modo": {
+            "type": "string",
+            "enum": [
+              "real",
+              "demonstrativo"
+            ],
+            "title": "Modo"
+          },
+          "fonte_meteorologica": {
+            "type": "string",
+            "title": "Fonte Meteorologica",
+            "default": "Open-Meteo"
+          },
+          "resumo": {
+            "$ref": "#/components/schemas/ResumoMonitoramento"
+          },
+          "eventos": {
+            "items": {
+              "$ref": "#/components/schemas/EventoClimatico"
+            },
+            "type": "array",
+            "title": "Eventos"
+          },
+          "notificacoes": {
+            "items": {
+              "$ref": "#/components/schemas/NotificacaoSimulada"
+            },
+            "type": "array",
+            "title": "Notificacoes"
+          },
+          "observacao": {
+            "type": "string",
+            "title": "Observacao",
+            "description": "Explica se os resultados vieram da previsão real ou de cenário demonstrativo."
+          }
+        },
+        "type": "object",
+        "required": [
+          "modo",
+          "resumo",
+          "eventos",
+          "notificacoes",
+          "observacao"
+        ],
+        "title": "ResultadoMonitoramento"
+      },
+      "ResumoMonitoramento": {
+        "properties": {
+          "cidades_monitoradas": {
+            "type": "integer",
+            "title": "Cidades Monitoradas"
+          },
+          "segurados_analisados": {
+            "type": "integer",
+            "title": "Segurados Analisados"
+          },
+          "eventos_identificados": {
+            "type": "integer",
+            "title": "Eventos Identificados"
+          },
+          "segurados_elegiveis": {
+            "type": "integer",
+            "title": "Segurados Elegiveis"
+          },
+          "notificacoes_simuladas": {
+            "type": "integer",
+            "title": "Notificacoes Simuladas"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cidades_monitoradas",
+          "segurados_analisados",
+          "eventos_identificados",
+          "segurados_elegiveis",
+          "notificacoes_simuladas"
+        ],
+        "title": "ResumoMonitoramento"
+      },
+      "Segurado": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "cidade": {
+            "type": "string",
+            "title": "Cidade"
+          },
+          "latitude": {
+            "type": "number",
+            "title": "Latitude"
+          },
+          "longitude": {
+            "type": "number",
+            "title": "Longitude"
+          },
+          "tipo_seguro": {
+            "type": "string",
+            "enum": [
+              "residencial",
+              "automovel",
+              "rural",
+              "empresarial"
+            ],
+            "title": "Tipo Seguro"
+          },
+          "bem_segurado": {
+            "type": "string",
+            "title": "Bem Segurado"
+          },
+          "canal": {
+            "type": "string",
+            "enum": [
+              "WhatsApp",
+              "SMS",
+              "E-mail",
+              "Push"
+            ],
+            "title": "Canal"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "nome",
+          "cidade",
+          "latitude",
+          "longitude",
+          "tipo_seguro",
+          "bem_segurado",
+          "canal"
+        ],
+        "title": "Segurado"
+      },
+      "Tips": {
+        "properties": {
+          "temp": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Temp",
+            "description": "lista de dicas relacionadas ao tipo variação de temperatura"
+          },
+          "tempest": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tempest",
+            "description": "lista de dicas relacionadas ao tipo tempestades"
+          },
+          "rain": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Rain",
+            "description": "lista de dicas relacionadas ao tipo chuva"
+          },
+          "wind": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Wind",
+            "description": "lista de dicas relacionadas ao tipo rajadas de vento"
+          },
+          "humidity": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Humidity",
+            "description": "lista de dicas relacionadas ao tipo umidade relativa"
+          },
+          "uv": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Uv",
+            "description": "lista de dicas relacionadas ao tipo raios ultravioleta"
+          },
+          "eye": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Eye",
+            "description": "lista de dicas relacionadas ao tipo saúde ocular"
+          },
+          "fog": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Fog",
+            "description": "lista de dicas relacionadas ao tipo neblina"
+          },
+          "cold": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Cold",
+            "description": "lista de dicas relacionadas ao tipo frio"
+          },
+          "flood": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Flood",
+            "description": "lista de dicas relacionadas ao tipo inundação"
+          }
+        },
+        "type": "object",
+        "required": [
+          "temp",
+          "tempest",
+          "rain",
+          "wind",
+          "humidity",
+          "uv",
+          "eye",
+          "fog",
+          "cold",
+          "flood"
+        ],
+        "title": "Tips"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
