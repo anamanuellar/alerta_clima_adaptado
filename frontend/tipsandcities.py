@@ -1,86 +1,86 @@
-from langchain_core.prompts import PromptTemplate
-from langchain_core.output_parsers import JsonOutputParser
-from app.modelos.tipsandcities import Tips, TipsandCities as TipsandCitiesModel, City
-from app.llm import LLM
+from copy import deepcopy
 from typing import List
-import json
-from functools import lru_cache
 
-@lru_cache
-def getLLM():
-    return LLM().getLLM()
+from app.modelos.tipsandcities import City, Tips
+
+
+TIPS = {
+    "temp": [
+        "Mudanças bruscas de temperatura pedem atenção especial com crianças e idosos.",
+        "Consulte a amplitude térmica antes de sair e leve uma camada extra de roupa.",
+        "Proteja animais de estimação em períodos de calor ou frio intenso.",
+    ],
+    "tempest": [
+        "Durante tempestades, permaneça em local protegido e longe de áreas abertas.",
+        "Retire aparelhos sensíveis das tomadas quando houver risco de descargas elétricas.",
+        "Evite se abrigar sob árvores, postes ou estruturas metálicas durante tempestades.",
+    ],
+    "rain": [
+        "Antes de chuva forte, verifique ralos, calhas e pontos de entrada de água.",
+        "Evite atravessar áreas alagadas, mesmo quando a profundidade parecer pequena.",
+        "Mantenha documentos e objetos importantes protegidos da umidade.",
+    ],
+    "wind": [
+        "Recolha vasos e objetos soltos de varandas quando houver previsão de ventos fortes.",
+        "Evite estacionar veículos próximos a árvores, placas e estruturas frágeis.",
+        "Mantenha portas e janelas fechadas durante rajadas intensas.",
+    ],
+    "humidity": [
+        "Em baixa umidade, hidrate-se e evite exercícios nos horários mais quentes.",
+        "Alta umidade favorece mofo; mantenha os ambientes ventilados quando for seguro.",
+        "Acompanhe a umidade do ar para ajustar hidratação e cuidados respiratórios.",
+    ],
+    "uv": [
+        "Use protetor solar mesmo em dias nublados quando o índice UV estiver elevado.",
+        "Prefira sombra e proteção física entre 10h e 16h.",
+        "Chapéu, roupas adequadas e óculos com proteção UV ajudam a reduzir a exposição.",
+    ],
+    "eye": [
+        "Óculos com proteção UV ajudam a proteger os olhos em dias de radiação intensa.",
+        "Em tempo seco, faça pausas de telas e mantenha os olhos hidratados.",
+        "Evite coçar os olhos quando houver poeira ou baixa umidade.",
+    ],
+    "fog": [
+        "Sob nevoeiro, dirija devagar, use farol baixo e aumente a distância de segurança.",
+        "Evite ultrapassagens quando a visibilidade estiver reduzida.",
+        "Não use farol alto no nevoeiro, pois o reflexo pode piorar a visibilidade.",
+    ],
+    "cold": [
+        "No frio, proteja principalmente extremidades e mantenha roupas secas.",
+        "Verifique aquecedores e nunca utilize equipamentos a combustão sem ventilação.",
+        "Pessoas vulneráveis precisam de atenção especial durante quedas de temperatura.",
+    ],
+    "flood": [
+        "Conheça rotas seguras e pontos elevados próximos à sua residência ou trabalho.",
+        "Nunca caminhe ou dirija em correntezas e áreas inundadas.",
+        "Em área de risco, mantenha documentos e itens essenciais prontos para evacuação.",
+    ],
+}
+
+
+CITIES: List[City] = [
+    {"city": "Salvador", "badge": "BA", "type": "brasileira"},
+    {"city": "São Paulo", "badge": "SP", "type": "brasileira"},
+    {"city": "Rio de Janeiro", "badge": "RJ", "type": "brasileira"},
+    {"city": "Curitiba", "badge": "PR", "type": "brasileira"},
+    {"city": "Recife", "badge": "PE", "type": "brasileira"},
+    {"city": "Fortaleza", "badge": "CE", "type": "brasileira"},
+    {"city": "Belo Horizonte", "badge": "MG", "type": "brasileira"},
+    {"city": "Porto Alegre", "badge": "RS", "type": "brasileira"},
+    {"city": "Lisboa", "badge": "PT", "type": "global"},
+    {"city": "Londres", "badge": "GB", "type": "global"},
+    {"city": "Nova York", "badge": "US", "type": "global"},
+    {"city": "Tóquio", "badge": "JP", "type": "global"},
+    {"city": "Sydney", "badge": "AU", "type": "global"},
+    {"city": "Buenos Aires", "badge": "AR", "type": "global"},
+]
+
 
 class TipsandCities:
-    def __init__(self):
+    """Catálogo confiável para conteúdos que não exigem IA Generativa."""
 
-        LLM.cache.clear()
-
-        llm = getLLM() 
-        
-        template = """
-                        Aja como um especialista de meteorologia e clima que fala Português do Brasil, e siga PASSOS abaixo:
-
-                        ## PASSOS:
-                        1. Forneça 3 dicas do tipo variação de temperatura no contexto de clima,
-                        2. Forneça 3 dicas do tipo tempestades, 
-                        3. Forneça 3 dicas do tipo chuva, 
-                        4. Forneça 3 dicas do tipo rajadas de vento, 
-                        5. Forneça 3 dicas do tipo umidade relativa.
-                        6. Forneça 3 dicas do tipo raios ultravioleta
-                        7. Forneça 3 dicas do tipo saúde ocular no contexto de clima
-                        8. Forneça 3 dicas do tipo neblina
-                        9. Forneça 3 dicas do tipo frio no contexto de clima
-                        10. Forneça 3 dicas do tipo inundação 
-                        11. Forneça o nome de 14 cidades, as respectivas siglas de seus 
-                        estados, caso não tenha estado, que seja do seu país, e seus tipos, se brasileira ou global (não brasileira). 
-                        12. 8 cidades brasileiras e 6 globais.
-
-                        NUNCA repetir TODAS as dicas e nem TODAS as cidades.
-                        
-                        ## SAÍDA
-                        {formatação de saída}
-
-                        NUNCA fornecer um JSON incorreto                       
-                        
-                   """
-        parser = JsonOutputParser(pydantic_object=TipsandCitiesModel)       
-                
-        prompt_template = PromptTemplate(
-            template=template,
-            partial_variables={"formatação de saída": parser.get_format_instructions()},            
-        )        
-
-        qa_chain = prompt_template | llm | parser        
-        
-        try:
-            json_qa_chain = json.dumps(qa_chain.invoke({}), ensure_ascii=False)
-            qa_chain = json.loads(json_qa_chain)
-
-        except Exception:
-            LLM.cache.clear()
-            json_qa_chain = json.dumps(qa_chain.invoke({}), ensure_ascii=False)
-            qa_chain = json.loads(json_qa_chain)
-        
-        self.__qa_chain = qa_chain
-        
     def getCities(self) -> List[City]:
-        
-        return self.__qa_chain['cities']
-    
+        return deepcopy(CITIES)
 
     def getTips(self) -> Tips:
-
-       return self.__qa_chain['tips']
-
-
-# TESTE
-if __name__ == "__main__":
-    tipsandcities = TipsandCities()
-    
-    cities = tipsandcities.getCities()
-    tips = tipsandcities.getTips()
-
-    print("Cities: \n", cities)
-    print("Tips: \n", tips)
-
-    
+        return Tips.model_validate(deepcopy(TIPS))

@@ -79,7 +79,13 @@ class AlertRequest(WeatherRequest):
                     or self._getWeatherCode() > 82
                 ):
 
-                advice = Advice(description).getAdvice()
+                try:
+                    advice = Advice(description).getAdvice()
+                except Exception:
+                    advice = (
+                        "Adote medidas preventivas adequadas, evite áreas de risco "
+                        "e acompanhe os alertas das autoridades locais."
+                    )
                 message = f"{description} {weather_icon} - {advice}"
     
                 return Alert(message = message)
@@ -89,7 +95,7 @@ class AlertRequest(WeatherRequest):
 
 
 class CurrentRequest(WeatherRequest): # Request para previsão de 7 dias
-    def __init__(self, latitude: float, longitude: float):
+    def __init__(self, latitude: float, longitude: float, timezone: str = "auto"):
         super().__init__()
 
         current_params = {
@@ -97,7 +103,7 @@ class CurrentRequest(WeatherRequest): # Request para previsão de 7 dias
             "longitude": longitude,
             #"models": "ncep_gfs_seamless", # Modelo de previsão do NCEP (National Center for Environmental Prediction)
             "current": ["precipitation", "precipitation_probability", "weather_code", "wind_gusts_10m"],
-            "timezone": "America/Sao_Paulo"            
+            "timezone": timezone
         }
 
         daily_params = {
@@ -105,11 +111,17 @@ class CurrentRequest(WeatherRequest): # Request para previsão de 7 dias
             "longitude": longitude,
             #"models": "ncep_gfs_seamless", # Modelo de previsão do NCEP (National Center for Environmental Prediction)
             "daily": ["sunrise", "sunset", "temperature_2m_max","temperature_2m_min"],
-            "timezone": "America/Sao_Paulo"            
+            "timezone": timezone
         }
 
-        daily_response = requests.get(url=self._URL, params=daily_params)
-        current_response = requests.get(url=self._URL, params=current_params)
+        try:
+            daily_response = requests.get(url=self._URL, params=daily_params, timeout=15)
+            current_response = requests.get(url=self._URL, params=current_params, timeout=15)
+        except requests.RequestException as erro:
+            raise HTTPException(
+                status_code=502,
+                detail="Não foi possível consultar a Open-Meteo.",
+            ) from erro
 
         if daily_response.status_code != 200:
             raise HTTPException(status_code=500, detail=daily_response.json()) 
@@ -137,14 +149,14 @@ class CurrentRequest(WeatherRequest): # Request para previsão de 7 dias
         sunset_hour = datetime.fromisoformat(sunset).time()
 
         if sunrise_hour > sunset_hour:
-            sunrise = f'{sunrise_hour} do dia anterior no horário de Brasília'
+            sunrise = f'{sunrise_hour} do dia anterior no horário local'
 
         else:
-            sunrise = f'{sunrise_hour} no horário de Brasília'                
+            sunrise = f'{sunrise_hour} no horário local'
             
         return Current(
                         sunrise = sunrise,
-                        sunset = f'{sunset_hour} no horário de Brasília',
+                        sunset = f'{sunset_hour} no horário local',
                         temp_max = f'{self.__daily_json["temperature_2m_max"][0]}°C',
                         temp_min = f'{self.__daily_json["temperature_2m_min"][0]}°C', 
                         precip = f'{self._current_json["precipitation"]} mm',                        
@@ -158,7 +170,7 @@ class CurrentRequest(WeatherRequest): # Request para previsão de 7 dias
                 
     
 class ForecastRequest(WeatherRequest):    
-    def __init__(self, latitude: float, longitude: float):
+    def __init__(self, latitude: float, longitude: float, timezone: str = "auto"):
         super().__init__()
 
         daily_params = {
@@ -166,10 +178,16 @@ class ForecastRequest(WeatherRequest):
                             "longitude": longitude,
                             #"models": "ncep_gfs_seamless", # Modelo de previsão do NCEP (National Center for Environmental Prediction)
                             "daily": ["sunrise", "sunset", "weather_code", "temperature_2m_max", "temperature_2m_min", "precipitation_probability_max", "wind_gusts_10m_max", "precipitation_sum"],
-                            "timezone": "America/Sao_Paulo"            
+                            "timezone": timezone
                         }
 
-        response = requests.get(self._URL, params=daily_params)
+        try:
+            response = requests.get(self._URL, params=daily_params, timeout=15)
+        except requests.RequestException as erro:
+            raise HTTPException(
+                status_code=502,
+                detail="Não foi possível consultar a Open-Meteo.",
+            ) from erro
 
         if response.status_code != 200:
             raise HTTPException(status_code=500, detail=response.json())
@@ -201,10 +219,10 @@ class ForecastRequest(WeatherRequest):
             sunset_hour = datetime.fromisoformat(r[3]).time()
     
             if sunrise_hour > sunset_hour:
-                sunrise = f'{sunrise_hour} do dia anterior no horário de Brasília'
+                sunrise = f'{sunrise_hour} do dia anterior no horário local'
     
             else:
-                sunrise = f'{sunrise_hour} no horário de Brasília'                
+                sunrise = f'{sunrise_hour} no horário local'
 
             
             self.__alert_request._setWeatherCode(r[1])
@@ -213,7 +231,7 @@ class ForecastRequest(WeatherRequest):
                         "date": r[0],
                         "weather_code": r[1],
                         "sunrise": sunrise,
-                        "sunset": f'{sunset_hour} no horário de Brasília',
+                        "sunset": f'{sunset_hour} no horário local',
                         "temp_max": r[4],
                         "temp_min": r[5],
                         "precipitation_probability_max": r[6],

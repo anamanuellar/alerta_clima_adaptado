@@ -1,7 +1,7 @@
 from fastapi import Body, HTTPException, APIRouter, Request, Depends
 from app.request import CurrentRequest, ForecastRequest
 from app.modelos.current import Current
-from app.latlong import LatLong
+from app.latlong import LatLong, normalizar_cidade
 from app.modelos.forecast import Forecast
 from typing import List
 from functools import lru_cache
@@ -36,7 +36,11 @@ async def getCurrent(request: Request, latlong: LatLong = Depends(getLatLong)) -
         latitude = latlong_obj["latitude"]
         longitude = latlong_obj["longitude"]
         
-        current = await CurrentRequest(latitude = latitude, longitude = longitude).getCurrent()
+        current = await CurrentRequest(
+            latitude=latitude,
+            longitude=longitude,
+            timezone=latlong_obj.get("timezone", "auto"),
+        ).getCurrent()
 
         return current
 
@@ -62,7 +66,11 @@ async def getForecast(request: Request, latlong: LatLong = Depends(getLatLong)) 
         latitude = latlong_obj["latitude"]
         longitude = latlong_obj["longitude"]
     
-        forecast = await ForecastRequest(latitude = latitude, longitude = longitude).getForecast()
+        forecast = await ForecastRequest(
+            latitude=latitude,
+            longitude=longitude,
+            timezone=latlong_obj.get("timezone", "auto"),
+        ).getForecast()
 
         return forecast
 
@@ -94,6 +102,7 @@ async def setCity(request: Request, city: str = Body(..., media_type="text/plain
                                                                                             # o corpo da requisição deve ser do 
                                                                                             # tipo text/plain 
 
+    city = normalizar_cidade(city)
     request.session['city'] = city
 
     return f"Cidade armazenada: {city}"

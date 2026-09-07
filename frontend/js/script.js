@@ -508,7 +508,9 @@
       loadingMsg.remove();
 
       if (response.ok) {
-        addBotMessage(`Cidade <b>${escapeHtml(city)}</b> selecionada com sucesso! ✨<br>O que você deseja fazer agora?`);
+        const confirmation = await response.text();
+        const selectedCity = confirmation.replace(/^Cidade armazenada:\s*/i, '') || city;
+        addBotMessage(`Cidade <b>${escapeHtml(selectedCity)}</b> selecionada com sucesso! ✨<br>O que você deseja fazer agora?`);
         showMenuOptions();
       } else {
         addBotMessage("Não foi possível registrar a cidade. Por favor, tente novamente.");
@@ -569,7 +571,7 @@
       showMenuOptions();
     } catch (err) {
       loadingMsg.remove();
-      addBotMessage("Erro ao obter a previsão atual.");
+      addBotMessage(`Erro ao obter a previsão atual: ${escapeHtml(err.message)}`);
       showMenuOptions();
     }
   }
@@ -610,7 +612,7 @@
       showMenuOptions();
     } catch (err) {
       loadingMsg.remove();
-      addBotMessage("Erro ao obter a previsão de 7 dias.");
+      addBotMessage(`Erro ao obter a previsão de 7 dias: ${escapeHtml(err.message)}`);
       showMenuOptions();
     }
   }

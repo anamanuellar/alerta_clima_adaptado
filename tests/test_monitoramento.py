@@ -1,12 +1,19 @@
 import unittest
 from unittest.mock import patch
 
+from fastapi.testclient import TestClient
+
+from app.latlong import normalizar_cidade
+from app.main import app
 from app.modelos.monitoramento import EventoClimatico, Segurado
 from app.monitoramento import ServicoMonitoramento, identificar_eventos
 from app.regras import segurado_deve_ser_notificado
 
 
 class RegrasDeNegocioTest(unittest.TestCase):
+    def test_normaliza_frase_com_nome_da_cidade(self):
+        self.assertEqual(normalizar_cidade("veja o clima em salvador"), "salvador")
+
     def test_codigo_82_e_identificado_como_chuva_intensa(self):
         dados = {
             "time": ["2026-09-08"],
@@ -82,6 +89,18 @@ class FluxoCompletoTest(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(
             all(item.status == "Envio simulado com sucesso" for item in resultado.notificacoes)
         )
+
+
+class EndpointsSemLLMTest(unittest.TestCase):
+    def test_dicas_e_cidades_nao_dependem_de_chave_de_ia(self):
+        with TestClient(app) as client:
+            dicas = client.get("/api/v1/tips")
+            cidades = client.get("/api/v1/cities")
+
+        self.assertEqual(dicas.status_code, 200)
+        self.assertEqual(cidades.status_code, 200)
+        self.assertEqual(len(dicas.json()["rain"]), 3)
+        self.assertEqual(len(cidades.json()), 14)
 
 
 if __name__ == "__main__":
