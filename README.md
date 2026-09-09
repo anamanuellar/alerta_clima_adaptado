@@ -1,6 +1,6 @@
 # Alerta Clima Seguro
 
-Protótipo desenvolvido para o **Desafio 5 do InsurMinds/I2A2**. A aplicação monitora previsões meteorológicas, identifica eventos de risco, aplica regras de negócio, seleciona segurados potencialmente afetados, gera comunicações personalizadas com IA e simula o envio das notificações.
+Protótipo desenvolvido para o **Desafio 5 do InsurMinds/I2A2** do grupo SintonIA. A aplicação monitora previsões meteorológicas, identifica eventos de risco, aplica regras de negócio, seleciona segurados potencialmente afetados, gera comunicações personalizadas com IA e simula o envio das notificações.
 
 ## Fluxo da solução
 
